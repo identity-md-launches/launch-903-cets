@@ -20,6 +20,7 @@ contract CetsFactoryHarness {
     }
 }
 
+/// forge-config: default.fuzz.runs = 1000
 contract CetsTest is Test {
     uint256 private constant SUPPLY = 1_000_000_000_000_000_000_000_000_000;
     address private constant DEPLOYER = address(0xD3);
@@ -350,7 +351,8 @@ contract CetsTest is Test {
     }
 
     function testFuzz_transferConservesSupply(address recipient, uint256 amount) public {
-        vm.assume(recipient != address(0) && recipient != DEPLOYER);
+        recipient = address(uint160(bound(uint160(recipient), 1, type(uint160).max)));
+        if (recipient == DEPLOYER) recipient = ALICE;
         amount = bound(amount, 0, SUPPLY);
         vm.prank(DEPLOYER);
         assertTrue(token.transfer(recipient, amount));
